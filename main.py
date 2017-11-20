@@ -15,7 +15,7 @@ DOTENV_PATH = join(dirname(__file__), '.env')
 load_dotenv(DOTENV_PATH)
 
 START = datetime.datetime.now()
-WORK_DATE = START.strftime('%Y%m%d')
+WORK_DATE = START.strftime('%Y-%m-%d')
 ENDPOINT = os.environ.get('AWS_API_ENDPOINT')
 
 MAIL_TEMPLATE = """
@@ -37,7 +37,7 @@ if __name__ == '__main__':
     }).json()['result'])
 
     if crawler.RESULTS.is_cleared():
-        utils.LOGGER.info('%s 処理終了' % WORK_DATE)
+        utils.LOGGER.info('%s 処理終了（処理済み）' % WORK_DATE)
         sys.exit()
 
     # スクリーンショット保存ディレクトリ生成
