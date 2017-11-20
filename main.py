@@ -2,6 +2,8 @@
 import datetime
 import os
 from os.path import join, dirname
+import pathlib
+import sys
 from dotenv import load_dotenv
 import api_client
 import crawler
@@ -34,7 +36,16 @@ if __name__ == '__main__':
         'dateOfAccess': WORK_DATE,
     }).json()['result'])
 
-    crawler.access_to_sp()
+    if crawler.RESULTS.is_cleared():
+        utils.LOGGER.info('%s 処理終了' % WORK_DATE)
+        sys.exit()
+
+    # スクリーンショット保存ディレクトリ生成
+    SAVE_DIR = '%s/%s/%s' % (os.environ.get('SCREENSHOT_DIR'),
+                             START.strftime('%Y-%m'), START.strftime('%Y-%m-%d'))
+    pathlib.Path(SAVE_DIR).mkdir(parents=True, exist_ok=True)
+
+    crawler.access_to_sp(SAVE_DIR)
 
     # PUT
     api_client.put(ENDPOINT, {

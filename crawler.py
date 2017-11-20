@@ -1,7 +1,9 @@
 """ Seleniumアクセス管理 """
+import datetime
 import os
-import time
+import pathlib
 import sys
+import time
 import utils
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -14,12 +16,12 @@ from selenium.webdriver.chrome.options import Options
 # 結果オブジェクト
 RESULTS = None
 
+AMEBA_URL = 'https://s.amebame.com'
+
 
 def login(driver: WebDriver, wait: WebDriverWait):
     """ ログイン """
-    url = 'https://s.amebame.com'
-
-    driver.get(url)
+    driver.get(AMEBA_URL)
 
     # click login
     link_text = os.environ.get('SOCIAL_VENDOR_NAME')
@@ -62,7 +64,7 @@ def get_driver(user_agent=''):
     return (driver, wait)
 
 
-def access_to_sp():
+def access_to_sp(save_dir: str):
     """ SPサイトへアクセス """
     user_agent = 'Mozilla/5.0 (Linux; Android 5.0.2; SH-04G Build/SC010)\
         AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.110 Mobile Safari/537.36'
@@ -72,25 +74,29 @@ def access_to_sp():
         login(driver, wait)
 
         if not RESULTS.slot.get('success'):
-            slot(driver)
+            slot(save_dir, driver)
 
         if not RESULTS.roulette.get('success'):
-            roulette(driver, wait)
+            roulette(save_dir, driver, wait)
 
         if not RESULTS.scratch.get('success'):
-            scratch(driver, wait)
+            scratch(save_dir, driver, wait)
 
     except:
         utils.LOGGER.error(sys.exc_info()[0])
+        error_dir = save_dir + '/error'
+        pathlib.Path(error_dir).mkdir(parents=True, exist_ok=True)
+        driver.save_screenshot(
+            '%s/error_%s.png' % (error_dir, datetime.datetime.now().strftime('%Y%m%d%H%M%S')))
         raise
     finally:
         driver.quit()
 
 
-def slot(driver: WebDriver):
+def slot(save_dir: str, driver: WebDriver):
     """ スロット """
     url = 'https://aw.mobadme.jp/slot/play?m_id=1528'
-    success = False
+    success = True
 
     driver.get(url)
 
@@ -108,7 +114,8 @@ def slot(driver: WebDriver):
         # URLが結果画面になるのを待つ
         slot_wait.until(lambda driver: driver.current_url != current)
 
-        success = True
+        driver.save_screenshot(
+            '%s/slot_%s.png' % (save_dir, datetime.datetime.now().strftime('%Y%m%d%H%M%S')))
     except:
         utils.LOGGER.warn("　スロットはプレイ済みでした。")
 
@@ -118,7 +125,7 @@ def slot(driver: WebDriver):
     }
 
 
-def roulette(driver: WebDriver, wait: WebDriverWait):
+def roulette(save_dir: str, driver: WebDriver, wait: WebDriverWait):
     """ ルーレット """
     url = 'https://s.amebame.com/#gacha/roulette/lp'
     success = True
@@ -132,8 +139,7 @@ def roulette(driver: WebDriver, wait: WebDriverWait):
     # URLが一度リダイレクトするため、それらが終わるのを待つ
     try:
         wait.until(lambda driver: driver.current_url != url)
-        wait.until(lambda driver: driver.current_url !=
-                   'https://s.amebame.com')
+        wait.until(lambda driver: driver.current_url != AMEBA_URL)
     except:
         # タイムアウトになったのでURL遷移できているものとみなす
         pass
@@ -167,6 +173,9 @@ def roulette(driver: WebDriver, wait: WebDriverWait):
             wait.until(ec.visibility_of_element_located(
                 (By.CSS_SELECTOR, '#gacha > div.roulette_result img')))
 
+            driver.save_screenshot(
+                '%s/roulette_%d_%s.png' % (save_dir, loop_count, datetime.datetime.now().strftime('%Y%m%d%H%M%S')))
+
             loop_count += 1
 
             if loop_count <= count:
@@ -187,10 +196,10 @@ def roulette(driver: WebDriver, wait: WebDriverWait):
     }
 
 
-def scratch(driver: WebDriver, wait: WebDriverWait):
+def scratch(save_dir: str, driver: WebDriver, wait: WebDriverWait):
     """ スクラッチ """
     url = 'http://d-moneymall.mobadme.jp/scratch/'
-    success = False
+    success = True
 
     driver.get(url)
 
@@ -199,9 +208,14 @@ def scratch(driver: WebDriver, wait: WebDriverWait):
         try:
             # ページをリフレッシュし、URLが結果画面になるのを待つ
             driver.refresh()
-            wait.until(lambda driver: driver.current_url != url)
+            wait.until(ec.url_to_be(
+                'https://aw.mobadme.jp/scratch/result?m_id=5701'))
+
+            driver.save_screenshot(
+                '%s/scratch_%s.png' % (save_dir, datetime.datetime.now().strftime('%Y%m%d%H%M%S')))
         except:
             utils.LOGGER.exception('スクラッチプレイエラー')
+            success = False
 
     # ステータス更新
     RESULTS.scratch = {

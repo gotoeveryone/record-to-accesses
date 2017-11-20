@@ -23,6 +23,12 @@ class Result(object):
         else:
             return None
 
+    def is_cleared(self):
+        """ すべて実施済みかを判定 """
+        return self.slot.get('success') \
+            and self.roulette.get('success') \
+            and self.scratch.get('success')
+
     @property
     def slot(self):
         """ スロット結果 """
