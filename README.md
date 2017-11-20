@@ -9,6 +9,7 @@ Record to accesses at social website.
 Installed the following program.
 
 - Python3.x
+- ChromeDriver
 
 ### Installing
 
