@@ -20,7 +20,6 @@ ENDPOINT = os.environ.get('AWS_API_ENDPOINT')
 
 MAIL_TEMPLATE = """
 -----%s 処理結果-----
-
 　スロット：%s
 　ルーレット：%s (%d回実施)
 　スクラッチ：%s

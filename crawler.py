@@ -198,24 +198,23 @@ def roulette(save_dir: str, driver: WebDriver, wait: WebDriverWait):
 
 def scratch(save_dir: str, driver: WebDriver, wait: WebDriverWait):
     """ スクラッチ """
-    url = 'http://d-moneymall.mobadme.jp/scratch/'
+    url = 'https://aw.mobadme.jp/scratch/play?m_id=5701'
     success = True
 
     driver.get(url)
 
-    # URLがリダイレクトしていない（結果画面でない）場合、スクラッチを実施
-    if driver.current_url == url:
-        try:
-            # ページをリフレッシュし、URLが結果画面になるのを待つ
-            driver.refresh()
-            wait.until(ec.url_to_be(
-                'https://aw.mobadme.jp/scratch/result?m_id=5701'))
+    try:
+        wait.until(ec.url_to_be(url))
+        # ページをリフレッシュし、URLが結果画面になるのを待つ
+        driver.refresh()
+        wait.until(ec.url_to_be(
+            'https://aw.mobadme.jp/scratch/result?m_id=5701'))
 
-            driver.save_screenshot(
-                '%s/scratch_%s.png' % (save_dir, datetime.datetime.now().strftime('%Y%m%d%H%M%S')))
-        except:
-            utils.LOGGER.exception('スクラッチプレイエラー')
-            success = False
+        driver.save_screenshot(
+            '%s/scratch_%s.png' % (save_dir, datetime.datetime.now().strftime('%Y%m%d%H%M%S')))
+    except:
+        utils.LOGGER.exception('スクラッチプレイエラー')
+        success = False
 
     # ステータス更新
     RESULTS.scratch = {
