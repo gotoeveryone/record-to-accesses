@@ -9,6 +9,7 @@ Record to accesses at social website.
 Installed the following program.
 
 - Python3.x
+- pipenv
 - ChromeDriver
 
 Setup the AWS services.
@@ -17,20 +18,19 @@ Setup the AWS services.
 - Lambda (Refer at `lambda` directory)
 - DynamoDB (Table name is `access_to_socials`, primary key is `date_of_access`)
 
+Copy `.env.example` to `.env`, changes using local value.
+
 ### Installing
 
 Execute command at cloned directory root.
 
 ```
-cd <project_dir>
+$ cd <project_dir>
+$ pipenv install
+```
 
-python -m venv venv
+### Run
 
-# Mac/Linux
-./venv/bin/activate
-
-# Windows
-venv\Scripts\activate.bat
-
-pip install -r requirements.txt
+```
+$ pipenv run python main.py
 ```
