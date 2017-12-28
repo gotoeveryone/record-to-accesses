@@ -46,15 +46,17 @@ def login(driver: WebDriver, wait: WebDriverWait):
     driver.find_element_by_id('btnSubmit').click()
 
 
-def get_driver(user_agent=''):
+def get_driver(is_sp=True):
     """ WebDriver生成 """
     opts = Options()
     binary_location = os.environ.get('BINARY_LOCATION')
     if binary_location:
         opts.binary_location = binary_location
 
-    if user_agent:
-        opts.add_argument('user-agent=%s' % (user_agent))
+    if is_sp:
+        user_agent = os.environ.get('SP_USER_AGENT')
+        if user_agent:
+            opts.add_argument('user-agent=%s' % (user_agent))
 
     driver = webdriver.Chrome(chrome_options=opts)
     wait = WebDriverWait(driver, 10)
@@ -66,9 +68,7 @@ def get_driver(user_agent=''):
 
 def access_to_sp(save_dir: str):
     """ SPサイトへアクセス """
-    user_agent = 'Mozilla/5.0 (Linux; Android 5.0.2; SH-04G Build/SC010)\
-        AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.110 Mobile Safari/537.36'
-    driver, wait = get_driver(user_agent)
+    driver, wait = get_driver()
 
     try:
         login(driver, wait)
