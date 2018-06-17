@@ -7,6 +7,7 @@ import sys
 from dotenv import load_dotenv
 import api_client
 import crawler
+import json
 import model
 import utils
 
@@ -16,13 +17,15 @@ load_dotenv(DOTENV_PATH)
 
 START = datetime.datetime.now()
 WORK_DATE = START.strftime('%Y-%m-%d')
-ENDPOINT = os.environ.get('AWS_API_ENDPOINT')
+# ENDPOINT = os.environ.get('AWS_API_ENDPOINT')
 
 MAIL_TEMPLATE = """
 -----%s 処理結果-----
 　スロット：%s
 　ルーレット：%s (%d回実施)
 　スクラッチ：%s
+
+　結果の格納：%s
 """
 
 if __name__ == '__main__':
@@ -31,9 +34,11 @@ if __name__ == '__main__':
     utils.LOGGER.info('%s 処理開始' % WORK_DATE)
 
     # GET
-    crawler.RESULTS = model.Result(api_client.get(ENDPOINT, {
+    response = api_client.call_lambda('accessToSocial', {
         'dateOfAccess': WORK_DATE,
-    }).json()['result'])
+    })
+    crawler.RESULTS = model.Result(json.loads(
+        response['Payload'].read().decode('utf-8')))
 
     if crawler.RESULTS.is_cleared():
         utils.LOGGER.info('%s 処理終了（処理済み）' % WORK_DATE)
@@ -47,10 +52,11 @@ if __name__ == '__main__':
     crawler.access_to_sp(SAVE_DIR)
 
     # PUT
-    api_client.put(ENDPOINT, {
+    response = api_client.call_lambda('putSocial', {
         'dateOfAccess': WORK_DATE,
         'result': crawler.RESULTS.fields(),
     })
+    put_success = True if response['ResponseMetadata']['HTTPStatusCode'] == 200 else False
 
     MAIL_BODY = MAIL_TEMPLATE % (
         WORK_DATE,
@@ -59,6 +65,7 @@ if __name__ == '__main__':
         crawler.RESULTS.roulette.get(
             'count') if crawler.RESULTS.roulette.get('count') else 0,
         '成功' if crawler.RESULTS.scratch.get('success') else '失敗',
+        '成功' if put_success else '失敗',
     )
     utils.send_mail(START, os.environ.get('MAIL_TO_ADDRESS'),
                     'ソーシャル関連ページアクセス結果通知', MAIL_BODY)

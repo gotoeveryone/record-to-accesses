@@ -88,3 +88,16 @@ def put(endpoint: str, data=None):
     request_data = json.dumps(data)
     headers = _get_signed_headers('PUT', request_data, use_payload=True)
     return requests.put(endpoint, data=request_data, headers=headers)
+
+
+def call_lambda(funcname: str, params=None):
+    """ Lambda関数をコール """
+    import boto3
+    import json
+    client = boto3.client('lambda')
+    return client.invoke(
+        FunctionName=funcname,
+        InvocationType='RequestResponse',
+        Payload=json.dumps(params),
+        LogType='Tail'
+    )
