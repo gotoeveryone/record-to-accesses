@@ -6,7 +6,7 @@ import smtplib
 from datetime import datetime
 from email.header import Header
 from email.mime.text import MIMEText
-from email.utils import formataddr
+from email.utils import formataddr, formatdate, make_msgid
 
 # ロガー
 LOGGER = None
@@ -65,10 +65,12 @@ def send_mail(start, to_addresses, subject, body):
     to_str = ','.join(to_addresses)
 
     # ヘッダ
+    msg['Message-ID'] = make_msgid()
     msg['Subject'] = subject
     user_name = os.environ.get('MAIL_FROM_NAME').encode('utf-8')
     msg['From'] = formataddr((str(Header(user_name, 'utf-8')), user))
     msg['To'] = to_str
+    msg['Date'] = formatdate()
 
     logger = logging.getLogger(__name__)
     try:
