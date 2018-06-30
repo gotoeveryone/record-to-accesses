@@ -38,7 +38,7 @@ if __name__ == '__main__':
         'dateOfAccess': WORK_DATE,
     })
     crawler.RESULTS = model.Result(json.loads(
-        response['Payload'].read().decode('utf-8')))
+        response['Payload'].read().decode('utf-8'))['result'])
 
     if crawler.RESULTS.is_cleared():
         utils.LOGGER.info('%s 処理終了（処理済み）' % WORK_DATE)
