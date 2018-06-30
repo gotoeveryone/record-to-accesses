@@ -205,10 +205,15 @@ def scratch(save_dir: str, driver: WebDriver, wait: WebDriverWait):
 
     try:
         wait.until(ec.url_to_be(url))
-        # ページをリフレッシュし、URLが結果画面になるのを待つ
-        driver.refresh()
-        wait.until(ec.url_to_be(
-            'https://aw.mobadme.jp/scratch/result?m_id=5701'))
+
+        # img.item-image を3つ選択して待機
+        seals = driver.find_elements_by_css_selector('img.item-image')[0:3]
+        for s in seals:
+            s.click()
+
+        # .resultBoard が出たらキャプチャ
+        wait.until(ec.visibility_of_element_located(
+            (By.CSS_SELECTOR, '.resultBoard')))
 
         driver.save_screenshot(
             '%s/scratch_%s.png' % (save_dir, datetime.datetime.now().strftime('%Y%m%d%H%M%S')))
