@@ -58,6 +58,7 @@ def get_driver(is_sp=True):
         if user_agent:
             opts.add_argument('user-agent=%s' % (user_agent))
 
+    opts.add_argument('--headless')
     driver = webdriver.Chrome(chrome_options=opts)
     wait = WebDriverWait(driver, 10)
     driver.set_window_size(400, 900)
