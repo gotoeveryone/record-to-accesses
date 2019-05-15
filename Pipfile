@@ -8,6 +8,7 @@ selenium = "*"
 python-dotenv = "*"
 requests = ">=2.20.0"
 "boto3" = "*"
+urllib3 = ">=1.24.2"
 
 [dev-packages]
 "autopep8" = "*"
